@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=StableDiffusion
+Comment=Launch Forge web UI inside Docker
+Exec= bash -c "cd $HOME/ai/forge && docker-compose up"
+Icon=$HOME/ai/forge/icon.png
+Terminal=true
+Type=Application
+Categories=Development;Graphics;AI;
+StartupNotify=true
