@@ -4,7 +4,7 @@ Docker image with Forge WebUI and full NVIDIA Blackwell (RTX 50xx) support. Incl
  This image is made for NixOS users to install Forge WebUI with Docker.
 
 # Attention please
-NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are in ```docker``` group)
+NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are not in ```docker``` group ( Add yourself to that group .) )
 
 # Installation      
 
