@@ -4,7 +4,11 @@ Docker image with Forge WebUI and full NVIDIA Blackwell (RTX 50xx) support. Incl
  This image is made for NixOS users to install Forge WebUI with Docker.
 
 # Attention please
+<<<<<<< HEAD
 NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are not in ```docker``` group ( Add yourself to that group .) )
+=======
+NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are not in ```docker``` group)
+>>>>>>> 0a4a246 (Fixed root user owner(now you owner) changed docker-compose ip and added dns option)
 
 # Installation      
 
@@ -17,7 +21,7 @@ cd "$HOME/ai/forge"
 mkdir -p "$(pwd)/mnt/outputs"
 ```
 
-### Method 1. (No cloning repo)
+### Method 1. (No cloning repo) (not updated)
 Using the docker run command. The current image name is ```enderkiller5532/forge-webui-nvidia:latest``` or if stable build ```enderkiller5532/forge-webui-nvidia:2026.1.cu128-ser50```
 
 
@@ -59,7 +63,7 @@ cd "$HOME/ai/sd-webui-nvidia-docker-nixos"
 ```
 Edit the docker-compose as you like it.
 ```
-version: '3.8'
+#version: '3.8'
 services:
   forge-ui:
     build: .
@@ -68,15 +72,22 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
     volumes:
-      - ./mnt/outputs:/mnt/outputs
-      - ~/ai/forge/models/checkpoints:/app/forge/models/Stable-diffusion
-      - ~/ai/forge/models/loras:/app/forge/models/Lora
-    # NixOS GPU - not only for nixos
+      - ~/ai/Data/outputs:/mnt/outputs
+      - ~/ai/Data/checkpoints:/app/forge/models/Stable-diffusion
+      - ~/ai/Data/loras:/app/forge/models/Lora
+    # NixOS GPU device assignment
     devices:
       - nvidia.com/gpu=all
     shm_size: '8gb'
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    dns_search: []
+    dns_opt:
+      - ndots:0
+      - attempts:3
 ```
 Now run :
 ```
@@ -149,6 +160,21 @@ Firewall
 #    allowedUDPPorts = [      ];
    };
 ```
+
+## Fixes
+### First update
+1) Updated ```docker-compose``` to use ```$HOME/ai/data```
+2) Updated ```Dockerfile``` to detect ```$USER``` or ```whoami```
+3) Updated ```README.md```
+4) Changed ```docker-compose``` to use ``` http://localhost:7860``` or ```http://127.0.0.1:7860``` for safety.
+
+### Planed 
+
+1) Update image in dockerhub
+2) Create comfyui dockerfile and connect to forge
+3) Small fixes
+4) Recreate all README.md
+
 # TL;DR
 First try return an error - - don't care about it.Second start container,just copy paste,and dont rush and be careful with Nixos Driver section.
 ```

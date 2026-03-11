@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     git \
     wget \
+    gosu \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
@@ -26,12 +27,22 @@ RUN apt-get update && apt-get install -y \
 # For easy auto install
 RUN ln -sf /usr/bin/python3.10 /usr/bin/python
 
+
 # Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --upgrade pip
+
+# build deps
+RUN pip install --no-cache-dir setuptools wheel packaging
+
+# CLIP fix
+RUN pip install --no-cache-dir --no-build-isolation \
+https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip
+
 
 # Install PyTorch with CUDA 12.8 support CHANGE LINK IF YOU GET RTX 6000 or New card idk what can happen  https://download.pytorch.org/whl/(cu128) <--- this part only
 RUN pip install --no-cache-dir \
     torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
 
 # Make /app dir for forge
 WORKDIR /app
@@ -85,57 +96,31 @@ RUN pip install --no-cache-dir \
 # Open port
 EXPOSE 7860
 
-# Create entrypoint script that ensures proper symlinks
-RUN echo '#!/bin/bash\n\
-set -e\n\
+# Create entrypoint script — runs as root, detects volume owner, drops to that user
+RUN printf '#!/bin/bash\nset -e\n\n\
+# Detect the UID/GID of the mounted outputs volume\n\
+# This will match whoever owns ~/ai/Data/outputs on the host\n\
+OWNER_UID=$(stat -c "%%u" /mnt/outputs)\n\
+OWNER_GID=$(stat -c "%%g" /mnt/outputs)\n\
 \n\
-# Ensure /mnt directories exist or not\n\
-mkdir -p /mnt/models/Stable-diffusion \\\n\
-         /mnt/models/Lora \\\n\
-         /mnt/models/VAE \\\n\
-         /mnt/models/ControlNet \\\n\
-         /mnt/models/ESRGAN \\\n\
-         /mnt/models/GFPGAN \\\n\
-         /mnt/models/hypernetworks \\\n\
-         /mnt/models/embeddings \\\n\
-         /mnt/outputs\n\
+echo "Detected volume owner: UID=$OWNER_UID GID=$OWNER_GID"\n\
 \n\
-# Function to create symlink safely\n\
-create_symlink() {\n\
-    local target=$1\n\
-    local link=$2\n\
-    \n\
-    if [ -L "$link" ]; then\n\
-        # Already a symlink, remove it\n\
-        rm -f "$link"\n\
-    elif [ -d "$link" ]; then\n\
-        # Directory exists, remove it\n\
-        rm -rf "$link"\n\
-    elif [ -f "$link" ]; then\n\
-        # File exists, remove it\n\
-        rm -f "$link"\n\
-    fi\n\
-    \n\
-    # Create the symlink\n\
-    ln -s "$target" "$link"\n\
-}\n\
+# Create a runtime user matching the host user (if not already root)\n\
+if [ "$OWNER_UID" != "0" ]; then\n\
+    # Create group if it does not exist\n\
+    getent group "$OWNER_GID" || groupadd -g "$OWNER_GID" hostgroup\n\
+    # Create user if it does not exist\n\
+    getent passwd "$OWNER_UID" || useradd -m -u "$OWNER_UID" -g "$OWNER_GID" hostuser\n\
+    # Give that user ownership of the app directory\n\
+    chown -R "$OWNER_UID:$OWNER_GID" /app/forge\n\
+fi\n\
 \n\
-# Create all symlinks\n\
-create_symlink /mnt/models/Stable-diffusion /app/forge/models/Stable-diffusion\n\
-create_symlink /mnt/models/Lora /app/forge/models/Lora\n\
-create_symlink /mnt/models/VAE /app/forge/models/VAE\n\
-create_symlink /mnt/models/ControlNet /app/forge/models/ControlNet\n\
-create_symlink /mnt/models/ESRGAN /app/forge/models/ESRGAN\n\
-create_symlink /mnt/models/GFPGAN /app/forge/models/GFPGAN\n\
-create_symlink /mnt/models/embeddings /app/forge/embeddings\n\
-create_symlink /mnt/outputs /app/forge/outputs\n\
+echo "Starting Forge WebUI as UID=$OWNER_UID..."\n\
 \n\
-echo "Symlinks created successfully"\n\
-echo "Starting Forge WebUI..."\n\
-\n\
-# Launch Forge\n\
 cd /app/forge\n\
-python launch.py \\\n\
+\n\
+# Drop from root to the host user and launch\n\
+exec gosu "$OWNER_UID:$OWNER_GID" python launch.py \\\n\
     --listen \\\n\
     --port 7860 \\\n\
     --xformers \\\n\
@@ -143,8 +128,8 @@ python launch.py \\\n\
     --api \\\n\
     --opt-sdp-attention \\\n\
     --no-half-vae \\\n\
-    "$@"' > /entrypoint.sh && \
+    "$@"\n' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
-# Set the entrypoint
+# Stay as root so entrypoint can chown and use gosu
 ENTRYPOINT ["/entrypoint.sh"]

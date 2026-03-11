@@ -7,12 +7,19 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
     volumes:
-      - ./mnt/outputs:/mnt/outputs
-      - ~/ai/forge/models/checkpoints:/app/forge/models/Stable-diffusion
-      - ~/ai/forge/models/loras:/app/forge/models/Lora
+      - ~/ai/Data/outputs:/mnt/outputs
+      - ~/ai/Data/checkpoints:/app/forge/models/Stable-diffusion
+      - ~/ai/Data/loras:/app/forge/models/Lora
     # NixOS GPU device assignment
     devices:
       - nvidia.com/gpu=all
     shm_size: '8gb'
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    dns_search: []
+    dns_opt:
+      - ndots:0
+      - attempts:3
