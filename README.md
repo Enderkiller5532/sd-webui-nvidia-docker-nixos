@@ -6,8 +6,7 @@ Docker image with Forge WebUI and full NVIDIA Blackwell (RTX 50xx) support. Incl
 # Attention please
 
 NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are not in ```docker``` group ( Add yourself to that group .) )
-=======
-NO ROOT USER OR SUDO (Except ```sudo {nano/vim/neovim/etc} /etc/nixos/configuration.nix``` and if you are not in ```docker``` group)
+
 
 
 # Installation      
@@ -21,9 +20,11 @@ cd "$HOME/ai/forge"
 mkdir -p "$(pwd)/mnt/outputs"
 ```
 
-### Method 1. (No cloning repo) (not updated)
-Using the docker run command. The current image name is ```enderkiller5532/forge-webui-nvidia:latest``` or if stable build ```enderkiller5532/forge-webui-nvidia:2026.1.cu128-ser50```
-
+### Method 1. (No cloning repo) 
+Using the docker run command. The current Docker image is: ```enderkiller5532/forge-webui-nvidia:latest``` \
+or if stable build \([n]=version change [n] for you version)\
+```enderkiller5532/forge-webui-nvidia:2026.n.cu128-ser50``` \
+[versions : 1,2]
 
 First, you must run this command to create a container (it will return an error; this is expected).
 
@@ -167,13 +168,11 @@ Firewall
 2) Updated ```Dockerfile``` to detect ```$USER``` or ```whoami```
 3) Updated ```README.md```
 4) Changed ```docker-compose``` to use ``` http://localhost:7860``` or ```http://127.0.0.1:7860``` for safety.
-
+5) Updated image in Dockerhub
 ### Planed 
-
-1) Update image in dockerhub
-2) Create comfyui dockerfile and connect to forge
-3) Small fixes
-4) Recreate all README.md
+1) Create comfyui dockerfile and connect to forge
+2) Small fixes
+3) Recreate all README.md
 
 # TL;DR
 First try return an error - - don't care about it.Second start container,just copy paste,and dont rush and be careful with Nixos Driver section.
@@ -181,7 +180,7 @@ First try return an error - - don't care about it.Second start container,just co
 mkdir -p "$HOME/ai/forge/models/checkpoints"
 mkdir -p "$HOME/ai/forge/models/loras"
 cd "$HOME/ai/forge"
-mkdir -p "$(pwd)/mnt/outputs
+mkdir -p "$(pwd)/mnt/outputs"
 git clone https://github.com/Enderkiller5532/sd-webui-nvidia-docker-nixos.git "$HOME/ai/sd-webui-nvidia-docker-nixos"
 cd "$HOME/ai/sd-webui-nvidia-docker-nixos"
 docker-compose up -d
