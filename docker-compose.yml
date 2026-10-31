@@ -1,13 +1,14 @@
-version: '3.8'
 services:
   forge-ui:
     build: .
     container_name: stable-diffusion-forge
     environment:
+      - SLIRP4NETNS_ENABLE_IPV6=false
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     ports:
-      - "127.0.0.1:7860:7860"
+      - 7860:7860
+      - 7866:7861
     volumes:
       - ~/ai/Data/outputs:/mnt/outputs
       - ~/ai/Data/checkpoints:/app/forge/models/Stable-diffusion
