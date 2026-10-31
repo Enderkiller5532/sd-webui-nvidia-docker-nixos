@@ -8,7 +8,6 @@ echo "Detected volume owner: UID=$OWNER_UID GID=$OWNER_GID"
 if [ "$OWNER_UID" != "0" ]; then
     getent group "$OWNER_GID" >/dev/null || groupadd -g "$OWNER_GID" hostgroup
     getent passwd "$OWNER_UID" >/dev/null || useradd -m -u "$OWNER_UID" -g "$OWNER_GID" hostuser
-    # chown -R по всему дереву на каждый старт долгий: делаем только если владелец не совпал
     if [ "$(stat -c '%u' /app/forge)" != "$OWNER_UID" ]; then
         chown -R "$OWNER_UID:$OWNER_GID" /app/forge
     fi
