@@ -24,9 +24,9 @@ mkdir -p "$(pwd)/mnt/outputs"
 Using the docker run command. The current Docker image is: ```enderkiller5532/forge-webui-nvidia:latest``` \
 or if stable build \([n]=version change [n] for you version)\
 ```enderkiller5532/forge-webui-nvidia:2026.n.cu128-ser50``` \
-[versions : 1,2]
+[versions : 1,2,3]
 
-First, you must run this command to create a container (it will return an error; this is expected).
+First, you must run this command to create a container (it will return an error; this is expected on version 1,2).
 
 ```
 docker run \
@@ -92,7 +92,7 @@ services:
 ```
 Now run :
 ```
-docker-compose up -d # you will get an error
+docker-compose up -d # you will get an error(on version 1,2)
 docker-compose up -d # after first startup it will run normal
 ```
 After the error, you will have docker-compose container,and question how start it like an app.
@@ -158,7 +158,6 @@ Firewall
    networking.firewall = {
      enable = true;
      allowedTCPPorts = [ 7860 ];
-#    allowedUDPPorts = [      ];
    };
 ```
 
@@ -169,13 +168,17 @@ Firewall
 3) Updated ```README.md```
 4) Changed ```docker-compose``` to use ``` http://localhost:7860``` or ```http://127.0.0.1:7860``` for safety.
 5) Updated image in Dockerhub
+### Update version 3
+1) Image now is use less storage
+2) fixed first startup error
 ### Planed 
 1) Create comfyui dockerfile and connect to forge
-2) Small fixes
-3) Recreate all README.md
+
 
 # TL;DR
-First try return an error - - don't care about it.Second start container,just copy paste,and dont rush and be careful with Nixos Driver section.
+
+### First run will return an error on older version (1,2).Second will start container
+,just copy paste,and dont rush and be careful with Nixos Driver section.
 ```
 mkdir -p "$HOME/ai/forge/models/checkpoints"
 mkdir -p "$HOME/ai/forge/models/loras"
